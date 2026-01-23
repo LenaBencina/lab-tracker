@@ -1,0 +1,2 @@
+ INSERT OR IGNORE INTO lab (name, email, address)                                                                                                    
+  VALUES ('Synevo adria lab', 'laboratorij@adrialab.si', 'Šestova ulica 2, 1000 Ljubljana');
