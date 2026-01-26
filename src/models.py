@@ -11,7 +11,7 @@ class Lab(BaseModel):
 class Report(BaseModel):
     lab_name: str
     report_number: int | None = None
-    file_path: str
+    file_name: str
     collection_date: datetime
 
 

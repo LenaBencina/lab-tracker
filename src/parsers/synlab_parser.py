@@ -24,7 +24,7 @@ def parse_reference(reference: str) -> tuple[float | None, float | None]:
         raise ValueError("New reference type; not implemented yet")
 
 
-def parse_table(table: list) -> tuple[list[Test], list[TestResult]]:
+def parse_table(table: list) -> list[TestResult]:
     header_mixed = table[0][0]
     # category, header_str = header_mixed.split('\n')
 
@@ -58,18 +58,18 @@ def parse_table(table: list) -> tuple[list[Test], list[TestResult]]:
         )
         tests.append(test)
         results.append(result)
-        print(test)
-    return tests, results
+        # print(test)
+    return results
 
 
-def parse_report_metadata(text: str, file_path: Path) -> Report:
-    # Collection date
+def parse_report_metadata(text: str, file_name: str) -> Report:
+    # collection date
     match = re.search(r"Čas odvzema:\s*(\d{2}\.\d{2}\.\d{4})", text)
     if match:
         date_str = match.group(1)
         collection_date = datetime.strptime(date_str, "%d.%m.%Y").date()
 
-    # Lab number (report number)
+    # lab number (report number)
     match = re.search(r"Laboratorijska št\.:\s*(\d+)", text)
     report_number = int(match.group(1)) if match else None
 
@@ -77,20 +77,18 @@ def parse_report_metadata(text: str, file_path: Path) -> Report:
         lab_name="Synevo adria lab",
         report_number=report_number,
         collection_date=collection_date,
-        file_path=str(file_path),
+        file_name=file_name,
     )
 
 
-def parse_pdf(file_path: Path) -> tuple[Report, list[Test], list[TestResult]]:
+def parse_pdf(file_path: Path) -> tuple[Report, list[TestResult]]:
     with pdfplumber.open(file_path, password=SYNLAB_PDF_PASSWORD) as pdf:
         text = pdf.pages[0].extract_text()  # metadata from first page
-        report = parse_report_metadata(text, file_path)
-        all_tests = []
+        report = parse_report_metadata(text, file_path.stem)
         all_results = []
         for page in pdf.pages:
             tables = page.extract_tables()
             for table in tables:
-                tests, results = parse_table(table)
-                all_tests.extend(tests)
+                results = parse_table(table)
                 all_results.extend(results)
-    return report, all_tests, all_results
+    return report, all_results
