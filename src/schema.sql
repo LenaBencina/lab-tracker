@@ -1,14 +1,14 @@
 PRAGMA foreign_keys = ON;
 
 
-CREATE TABLE lab (
+CREATE TABLE IF NOT EXISTS lab (
     name TEXT PRIMARY KEY,
     email TEXT,
     address TEXT,
     created_at TEXT DEFAULT (datetime('now'))   
 );
 
-CREATE TABLE report (
+CREATE TABLE IF NOT EXISTS  report (
     id INTEGER PRIMARY KEY, 
     lab_name TEXT NOT NULL REFERENCES lab(name),
     report_number INTEGER,
@@ -17,13 +17,13 @@ CREATE TABLE report (
     created_at TEXT DEFAULT (datetime('now'))
 );
 
-CREATE TABLE test ( -- preiskava
+CREATE TABLE IF NOT EXISTS test ( -- preiskava
 --     id INTEGER PRIMARY KEY,
     name TEXT PRIMARY KEY ,
     category TEXT
 );
 
-CREATE TABLE test_result (
+CREATE TABLE IF NOT EXISTS test_result(
     id INTEGER PRIMARY KEY,
     report_id INTEGER NOT NULL REFERENCES report(id),
 --     test_id INTEGER NOT NULL REFERENCES test(id),

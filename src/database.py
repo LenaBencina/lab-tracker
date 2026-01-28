@@ -26,7 +26,7 @@ class Database:
     def report_exists(self, file_name: str) -> bool:
         with self.connect() as conn:
             cursor = conn.execute(
-                "SELECT 1 FROM report WHERE file_path = ?", (file_name,)
+                "SELECT 1 FROM report WHERE file_name = ?", (file_name,)
             )
             return cursor.fetchone() is not None
 
@@ -60,10 +60,18 @@ class Database:
 
     @staticmethod
     def _get_or_insert_test(conn, test: Test) -> str:
-        conn.execute(
-            "INSERT OR IGNORE INTO test (name, category) VALUES (?, ?)",
-            (test.name, test.category),
-        )
+        # without reporting the change this is enough
+        # conn.execute(
+        #     "INSERT OR IGNORE INTO test (name, category) VALUES (?, ?)",
+        #     (test.name, test.category),
+        # )
+        cursor = conn.execute("SELECT 1 FROM test WHERE name = ?", (test.name,))
+        if cursor.fetchone() is None:
+            conn.execute(
+                "INSERT INTO test (name, category) VALUES (?, ?)",
+                (test.name, test.category),
+            )
+            logger.info(f"New test inserted: {test.name}")
         return test.name
 
     @staticmethod

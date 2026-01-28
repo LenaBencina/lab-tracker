@@ -1,20 +1,33 @@
 from src.database import Database
-from src.parsers.synlab_parser import parse_pdf
+from src.parsers.synlab_parser import parse_pdf as parse_synlab_pdf
+from src.parsers.dcbled_parser import parse_pdf as parse_dcbled_pdf
 from src.config import PDFS_DIR
 import os
+
+PARSERS_PER_LAB = {"synlab": parse_synlab_pdf, "dcbled": parse_dcbled_pdf}
+
+
+def parse_and_insert_per_lab(db: Database, lab_name: str):
+    for file_name in os.listdir(PDFS_DIR / lab_name):
+        file_path = PDFS_DIR / lab_name / file_name
+
+        if db.report_exists(file_path.stem):
+            continue
+
+        report, results = PARSERS_PER_LAB.get(lab_name)(file_path)
+        db.insert_full_report(report, results)
 
 
 def main():
     # initialize db
     db = Database("data/lab_tracker.db")
-    db.execute_sql_script("src/delete_tables.sql")
+    # db.execute_sql_script("src/delete_tables.sql")
     db.execute_sql_script("src/schema.sql")
     db.execute_sql_script("src/insert_labs.sql")
 
-    for file_name in os.listdir(PDFS_DIR):
-        file_path = PDFS_DIR / file_name
-        report, results = parse_pdf(file_path)
-        db.insert_full_report(report, results)
+    # todo when multiple labs implemented: could list all subdirs in data/pdf instead of hardcoding/duplicating
+    parse_and_insert_per_lab(db, "synlab")
+    parse_and_insert_per_lab(db, "dcbled")
 
 
 if __name__ == "__main__":

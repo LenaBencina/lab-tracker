@@ -17,7 +17,7 @@ class Report(BaseModel):
 
 class Test(BaseModel):
     name: str
-    category: str
+    category: str | None
 
 
 class TestResult(BaseModel):
