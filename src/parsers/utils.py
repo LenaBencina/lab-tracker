@@ -1,3 +1,6 @@
+import re
+
+
 def normalize_unit(unit: str) -> str:
     UNIT_MAPPINGS = {
         "109/L": "10E9/L",
@@ -13,7 +16,17 @@ def normalize_unit(unit: str) -> str:
     return UNIT_MAPPINGS.get(unit, unit)
 
 
-def parse_reference(reference: str) -> tuple[float | None, float | None]:
+def parse_reference(reference: str, phase: str) -> tuple[float | None, float | None]:
+    # handle multi-phase references (e.g., hormone levels by menstrual cycle phase)
+    if "faza" in reference.lower():
+        pattern = rf"{re.escape(phase)}[^:]*:?\s*(\d+[.,]\d+)-(\d+[.,]\d+)"
+        match = re.search(pattern, reference, re.IGNORECASE)
+        if match:
+            min_val = float(match.group(1).replace(",", "."))
+            max_val = float(match.group(2).replace(",", "."))
+            return min_val, max_val
+        return None, None
+
     if "-" in reference:
         min_ref, max_ref = reference.split(" - ")
         return float(min_ref), float(max_ref)

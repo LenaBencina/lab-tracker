@@ -37,13 +37,13 @@ def parse_and_insert_per_lab(db: Database, lab_name: str):
 def main():
     # initialize db
     db = Database("data/lab_tracker.db")
-    db.execute_sql_script("src/delete_tables.sql")
+    # db.execute_sql_script("src/delete_tables.sql")
     db.execute_sql_script("src/schema.sql")
     db.execute_sql_script("src/insert_labs.sql")
 
     # todo when multiple labs implemented: could list all subdirs in data/pdf instead of hardcoding/duplicating
     parse_and_insert_per_lab(db, "synlab")
-    parse_and_insert_per_lab(db, "dcbled")
+    # parse_and_insert_per_lab(db, "dcbled")
 
 
 if __name__ == "__main__":

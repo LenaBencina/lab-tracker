@@ -30,14 +30,17 @@ def extract_test_results_from_table(table: list) -> list[TestResult]:
     results = []
     for row in table[1:]:
         name, reference, unit, value, out_of_range_flag = row[0:5]
+        # name, out_of_range_flag, value, reference, unit = row[0:5]
 
-        if value is None:
+        if value is None or value == "":
             logger.info(f"Detected useless row without a value: {row}")
             continue
 
         test = Test(name=name.replace("\n", ""), category=category)
 
-        min_ref, max_ref = parse_reference(reference)
+        min_ref, max_ref = parse_reference(
+            reference, phase="Folik"
+        )  # todo: make this configurable when/if needed
 
         # calculate out of range to double check
         out_of_range_calc = get_out_of_range(min_ref, max_ref, value)
@@ -57,12 +60,22 @@ def extract_test_results_from_table(table: list) -> list[TestResult]:
     return results
 
 
-def extract_report_metadata(text: str, file_name: str) -> Report:
-    # get collection date
-    match = re.search(r"Čas odvzema:\s*(\d{2}\.\d{2}\.\d{4})", text)
+def get_collection_date(label: str, text: str) -> datetime | None:
+    # match = re.search(rf"{re.escape(label)}:\s*(\d{2}\.\d{2}\.\d{4})", text)
+    match = re.search(rf"{re.escape(label)}:\s*(\d{{2}}\.\d{{2}}\.\d{{4}})", text)
     if match:
         date_str = match.group(1)
-        collection_date = datetime.strptime(date_str, "%d.%m.%Y").date()
+        return datetime.strptime(date_str, "%d.%m.%Y").date()
+    return None
+
+
+def extract_report_metadata(text: str, file_name: str) -> Report:
+    # get collection date
+    collection_date = get_collection_date(label="Čas odvzema", text=text)
+    if not collection_date:
+        collection_date = get_collection_date(label="Čas sprejema", text=text)
+    if not collection_date:
+        raise ValueError("Could not extract collection date")
 
     # get lab number (report number)
     match = re.search(r"Laboratorijska št\.:\s*(\d+)", text)
