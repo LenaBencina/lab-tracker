@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, date
 
 
 def normalize_unit(unit: str) -> str:
@@ -16,9 +17,13 @@ def normalize_unit(unit: str) -> str:
     return UNIT_MAPPINGS.get(unit, unit)
 
 
-def parse_reference(reference: str, phase: str) -> tuple[float | None, float | None]:
+def parse_reference(
+    reference: str, phase: str | None = None
+) -> tuple[float | None, float | None]:
     # handle multi-phase references (e.g., hormone levels by menstrual cycle phase)
     if "faza" in reference.lower():
+        if not phase:
+            raise ValueError("Phase must be specified")
         pattern = rf"{re.escape(phase)}[^:]*:?\s*(\d+[.,]\d+)-(\d+[.,]\d+)"
         match = re.search(pattern, reference, re.IGNORECASE)
         if match:
@@ -77,3 +82,12 @@ def get_out_of_range(min_ref: float, max_ref: float, value: float | str) -> str:
             return None
     else:
         raise ValueError("Something went wrong when getting out of range values")
+
+
+# todo: check date vs datetime
+def extract_date_from_text(text: str, labels: list[str]) -> date | None:
+    for label in labels:
+        match = re.search(rf"{re.escape(label)}:\s*(\d{{2}}\.\d{{2}}\.\d{{4}})", text)
+        if match:
+            return datetime.strptime(match.group(1), "%d.%m.%Y").date()
+    return None
