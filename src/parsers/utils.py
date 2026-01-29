@@ -4,6 +4,9 @@ def normalize_unit(unit: str) -> str:
         "1012/L": "10E12/L",
         "1,73m2": "1.73m2",
         "1": "L/L",
+        "ug/L": "μg/L",
+        "ukat/L": "μkat/L",
+        "umol/L": "μmol/L",
     }
 
     unit = unit.strip().replace("\n", "")

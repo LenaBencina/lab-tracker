@@ -60,11 +60,13 @@ def extract_celiac_markers(results_text: str):
     )
     if cel_iga_match:
         cel_iga_value = cel_iga_match.group("value").replace(",", ".")
-        cel_iga_ref = cel_iga_match.group("reference").replace(",", ".")
+        cel_iga_ref = cel_iga_match.group("reference")
 
         if cel_iga_ref:
             # parse from report
-            cel_iga_ref_min, cel_iga_ref_max = parse_reference(cel_iga_ref)
+            cel_iga_ref_min, cel_iga_ref_max = parse_reference(
+                cel_iga_ref.replace(",", ".")
+            )
         else:
             # default reference range
             cel_iga_ref_min, cel_iga_ref_max = 0.63, 4.84
